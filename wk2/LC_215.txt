@@ -1,74 +1,57 @@
 class Solution {
 public:
-    int findKthLargest(vector<int>& nums, int k) 
-    {
-        int targetIndex=nums.size()-k;
-        return select(nums, 0, nums.size() - 1, targetIndex);    
+    int findKthLargest(vector<int>& nums, int k) {
+        int targetIndex = nums.size() - k;
+        return select(nums, 0, nums.size() - 1, targetIndex);
     }
+
 private:
-    int select(vector<int>&nums,int left,int right, int k)
-    {
-        if (left==right)return nums[left];
+    int select(vector<int>& nums, int left, int right, int k) {
+        if (left == right) return nums[left];
 
-        int pivotIndex = getPivotIndex(nums, left, right);
+        int pivotValue = getPivotValue(nums, left, right);
+        pair<int, int> range = partition(nums, left, right, pivotValue);
 
-        int finalPos = partition(nums, left, right, pivotIndex);
-if (finalPos == k) 
-{
-    return nums[finalPos];
-
-} else if (finalPos < k) 
-{
-    return select(nums, finalPos + 1, right, k);
-
-} else 
-{
-    return select(nums, left, finalPos - 1, k);
-}
-    }
-
-    int getPivotIndex(vector<int>&nums,int left,int right)
-    {
-        int size=right-left+1;
-        if(size<=5) return findMedians(nums,left,right);
-
-        vector<int>medians;
-        for(int i=left;i<=right;i+=5)
-        {
-            int subright=min(i+4,right);
-            int m=findMedians(nums,i,subright);
-            medians.push_back(nums[m]);
-        }
-        int pivotmedian=select(medians,0,medians.size()-1,medians.size() / 2);
-
-        for(int i=left;i<=right;i++)
-        {
-            if(nums[i]==pivotmedian) return i;
-        }
-        return left;  
-    }
-    int findMedians(vector<int>&nums,int left,int right)
-{
-    sort(nums.begin()+left,nums.begin()+right+1);
-    return left+(right-left)/2;
-}
-
-int partition(vector<int>& nums, int left, int right, int pivotIndex)
-{
-    int pivotmedian=nums[pivotIndex];
-    swap(nums[pivotIndex], nums[right]);
-
-    int storeIndex=left;
-    for(int i = left; i < right; i++)
-    {
-        if (nums[i] < pivotmedian) 
-        {
-            swap(nums[i], nums[storeIndex]);
-            storeIndex++;
+        if (k >= range.first && k <= range.second) {
+            return nums[k];
+        } else if (k < range.first) {
+            return select(nums, left, range.first - 1, k);
+        } else {
+            return select(nums, range.second + 1, right, k);
         }
     }
-    swap(nums[storeIndex], nums[right]); 
-    return storeIndex;
-}
 
+    int getPivotValue(vector<int>& nums, int left, int right) {
+        int size = right - left + 1;
+        if (size <= 5) return findMedianDirectly(nums, left, right);
+
+        vector<int> medians;
+        for (int i = left; i <= right; i += 5) {
+            int subRight = min(i + 4, right);
+            medians.push_back(findMedianDirectly(nums, i, subRight));
+        }
+        return select(medians, 0, medians.size() - 1, medians.size() / 2);
+    }
+
+    int findMedianDirectly(vector<int>& nums, int left, int right) {
+        sort(nums.begin() + left, nums.begin() + right + 1);
+        return nums[left + (right - left) / 2];
+    }
+
+    pair<int, int> partition(vector<int>& nums, int left, int right, int pivot) {
+        int lt = left;
+        int i = left;
+        int gt = right;
+
+        while (i <= gt) {
+            if (nums[i] < pivot) {
+                swap(nums[lt++], nums[i++]);
+            } else if (nums[i] > pivot) {
+                swap(nums[i], nums[gt--]);
+            } else {
+                i++;
+            }
+        }
+        return {lt, gt};
+    }
 };
