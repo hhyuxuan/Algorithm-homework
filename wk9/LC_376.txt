@@ -1,0 +1,22 @@
+class Solution {
+public:
+    int wiggleMaxLength(std::vector<int>& nums) {
+        if (nums.size() < 2) {
+            return nums.size();
+        }
+
+        int prediff = 0; 
+        int currdiff = 0; 
+        int result = 1;  
+
+        for (int i = 1; i < nums.size(); i++) {
+            currdiff = nums[i] - nums[i - 1];
+            if ((prediff <= 0 && currdiff > 0) || (prediff >= 0 && currdiff < 0)) {
+                result++;
+                prediff = currdiff; 
+            }
+        }
+
+        return result;
+    }
+};
